@@ -55,13 +55,43 @@ app.post("/account", (request, response) => {
     return response.status(201).send();
 });
 
-//app.use(checarContaPorCPF);
- 
+app.put("/account", checarContaPorCPF, (request, response) => {
+    const {name} = request.body;
+    const {customer} = request;
+
+    customer.name = name;
+
+    return response.status(200).send();
+})
+
+app.get("/account", checarContaPorCPF, (request, response) => {
+    const {customer} = request;
+
+    return response.json(customer);
+});
+
 app.get("/statement", checarContaPorCPF, (request, response) => {
 
     const {customer} = request;
 
    return response.json(customer.statement);
+});
+
+app.get("/statement/date", checarContaPorCPF, (request, response) => {
+
+    const {customer} = request;
+
+    const {date} = request.query;
+
+    const dateFormat = new Date(date + " 00:00");
+
+    const statement = customer.statement.filter(
+    (statement) => 
+    statement.created_at.toDateString() === 
+    new Date(dateFormat).toDateString()
+    );
+
+   return response.json(statement);
 });
 
 app.post("/deposit", checarContaPorCPF, (request, response) => {
@@ -105,37 +135,13 @@ app.post("/withdraw", checarContaPorCPF, (request, response) =>{
     return response.status(201).send();
 })
 
-app.get("/statement/date", checarContaPorCPF, (request, response) => {
-
+app.get("/balance", checarContaPorCPF, (request, response) => {
     const {customer} = request;
 
-    const {date} = request.query;
+    const balance = getBalance(customer.statement);
 
-    const dateFormat = new Date(date + " 00:00");
-
-    const statement = customer.statement.filter(
-    (statement) => 
-    statement.created_at.toDateString() === 
-    new Date(dateFormat).toDateString()
-    );
-
-   return response.json(statement);
-});
-
-app.put("/account", checarContaPorCPF, (request, response) => {
-    const {name} = request.body;
-    const {customer} = request;
-
-    customer.name = name;
-
-    return response.status(200).send();
-})
-
-app.get("/account", checarContaPorCPF, (request, response) => {
-    const {customer} = request;
-
-    return response.json(customer);
-});
+    return response.json(balance);
+});    
 
 app.delete("/account", checarContaPorCPF, (request, response) => {
     const {customer} = request;
@@ -144,14 +150,6 @@ app.delete("/account", checarContaPorCPF, (request, response) => {
 
     return response.status(200).json(customers);
 })
-
-app.get("/balance", checarContaPorCPF, (request, response) => {
-    const {customer} = request;
-
-    const balance = getBalance(customer.statement);
-
-    return response.json(balance);
-});    
 
 app.listen(3333);
 
